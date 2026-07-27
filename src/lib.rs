@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::{
     app::{App, Plugin, Update},
-    input::InputSystem,
+    input::InputSystems,
     prelude::*,
 };
 use play::{play, start_playing, stop_playing};
@@ -31,13 +31,13 @@ struct StartTime(pub Duration);
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AutoplaySystem;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct SaveToFile(pub String);
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct LoadFromFile(pub String);
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct LoadFromFileAndPlay(pub String);
 
 pub struct AutoplayPlugin;
@@ -47,9 +47,9 @@ impl Plugin for AutoplayPlugin {
         app.insert_state(AutoplayState::Stopped)
             .insert_resource(StartTime(Duration::new(0, 0)))
             .insert_resource(Session::default())
-            .add_event::<SaveToFile>()
-            .add_event::<LoadFromFile>()
-            .add_event::<LoadFromFileAndPlay>()
+            .add_message::<SaveToFile>()
+            .add_message::<LoadFromFile>()
+            .add_message::<LoadFromFileAndPlay>()
             .add_systems(OnEnter(AutoplayState::Recording), start_recording)
             .add_systems(OnExit(AutoplayState::Recording), stop_recording)
             .add_systems(OnEnter(AutoplayState::Playing), start_playing)
@@ -65,7 +65,7 @@ impl Plugin for AutoplayPlugin {
                     play.run_if(in_state(AutoplayState::Playing)),
                 )
                     .chain()
-                    .after(InputSystem)
+                    .after(InputSystems)
                     .in_set(AutoplaySystem),
             );
     }

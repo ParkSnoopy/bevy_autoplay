@@ -34,7 +34,7 @@ impl Storable for Session {
     }
 }
 
-pub fn save_recording(mut ev_save: EventReader<SaveToFile>, session: Res<Session>) {
+pub fn save_recording(mut ev_save: MessageReader<SaveToFile>, session: Res<Session>) {
     for ev in ev_save.read() {
         let filename = ev.0.clone();
         session.save(&filename).unwrap();
@@ -42,7 +42,7 @@ pub fn save_recording(mut ev_save: EventReader<SaveToFile>, session: Res<Session
     }
 }
 
-pub fn load_recording(mut ev_load: EventReader<LoadFromFile>, mut session: ResMut<Session>) {
+pub fn load_recording(mut ev_load: MessageReader<LoadFromFile>, mut session: ResMut<Session>) {
     for ev in ev_load.read() {
         let filename = ev.0.clone();
         session.load(&filename).unwrap();
@@ -51,7 +51,7 @@ pub fn load_recording(mut ev_load: EventReader<LoadFromFile>, mut session: ResMu
 }
 
 pub fn load_recording_and_play(
-    mut ev_load: EventReader<LoadFromFileAndPlay>,
+    mut ev_load: MessageReader<LoadFromFileAndPlay>,
     mut session: ResMut<Session>,
     mut next_session_state: ResMut<NextState<AutoplayState>>,
 ) {

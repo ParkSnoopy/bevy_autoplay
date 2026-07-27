@@ -1,4 +1,4 @@
-use bevy::{input::InputSystem, prelude::*};
+use bevy::{input::InputSystems, prelude::*};
 use bevy_autoplay::{
     AutoplayPlugin, AutoplayState, AutoplaySystem, LoadFromFileAndPlay, SaveToFile,
 };
@@ -11,15 +11,15 @@ fn main() {
             PreUpdate,
             (toggle_record, toggle_play)
                 .before(AutoplaySystem)
-                .after(InputSystem),
+                .after(InputSystems),
         )
         .add_systems(Update, log_inputs)
         .add_systems(OnExit(AutoplayState::Recording), after_recording)
         .run();
 }
 
-fn after_recording(mut ev_save: EventWriter<SaveToFile>) {
-    ev_save.send(SaveToFile(format!(
+fn after_recording(mut ev_save: MessageWriter<SaveToFile>) {
+    ev_save.write(SaveToFile(format!(
         "examples/sessions/{}.gsi",
         Utc::now().timestamp_millis()
     )));
@@ -45,7 +45,7 @@ fn toggle_play(
     mut keyboard_input: ResMut<ButtonInput<KeyCode>>,
     autoplay_state: Res<State<AutoplayState>>,
     mut next_autoplay_state: ResMut<NextState<AutoplayState>>,
-    mut ev_load_play: EventWriter<LoadFromFileAndPlay>,
+    mut ev_load_play: MessageWriter<LoadFromFileAndPlay>,
 ) {
     keyboard_input.clear_just_released(KeyCode::F11);
     if !keyboard_input.clear_just_pressed(KeyCode::F11) {
@@ -55,7 +55,7 @@ fn toggle_play(
         next_autoplay_state.set(AutoplayState::Stopped);
         return;
     }
-    ev_load_play.send(LoadFromFileAndPlay(
+    ev_load_play.write(LoadFromFileAndPlay(
         "examples/sessions/1717878890687.gsi".into(),
     ));
 }
@@ -80,11 +80,11 @@ mod tests {
     #[test]
     fn player_must_press_f_key() {
         fn f_pressed(
-            mut result: EventWriter<TestResult>,
+            mut result: MessageWriter<TestResult>,
             keyboard_input: Res<ButtonInput<KeyCode>>,
         ) {
             if keyboard_input.just_pressed(KeyCode::KeyF) {
-                result.send(TestResult::Success);
+                result.write(TestResult::Success);
             }
         }
 
